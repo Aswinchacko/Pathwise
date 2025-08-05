@@ -1,0 +1,364 @@
+{
+  "designSystem": {
+    "metadata": {
+      "name": "Modern Learning Dashboard Design System",
+      "version": "1.0.0",
+      "description": "A comprehensive design system for educational dashboard interfaces",
+      "category": "dashboard"
+    },
+    "colorPalette": {
+      "primary": {
+        "purple": "#8B5CF6",
+        "purpleLight": "#A78BFA",
+        "purpleDark": "#7C3AED"
+      },
+      "secondary": {
+        "blue": "#3B82F6",
+        "blueLight": "#60A5FA",
+        "orange": "#F97316",
+        "orangeLight": "#FB923C"
+      },
+      "neutral": {
+        "white": "#FFFFFF",
+        "gray50": "#F9FAFB",
+        "gray100": "#F3F4F6",
+        "gray200": "#E5E7EB",
+        "gray300": "#D1D5DB",
+        "gray400": "#9CA3AF",
+        "gray500": "#6B7280",
+        "gray600": "#4B5563",
+        "gray700": "#374151",
+        "gray800": "#1F2937",
+        "gray900": "#111827"
+      },
+      "accent": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "primary": "Inter, system-ui, sans-serif",
+        "secondary": "SF Pro Display, system-ui, sans-serif"
+      },
+      "fontSizes": {
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem",
+        "lg": "1.125rem",
+        "xl": "1.25rem",
+        "2xl": "1.5rem",
+        "3xl": "1.875rem",
+        "4xl": "2.25rem"
+      },
+      "fontWeights": {
+        "normal": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "lineHeights": {
+        "tight": 1.25,
+        "normal": 1.5,
+        "relaxed": 1.75
+      }
+    },
+    "spacing": {
+      "xs": "0.25rem",
+      "sm": "0.5rem",
+      "md": "1rem",
+      "lg": "1.5rem",
+      "xl": "2rem",
+      "2xl": "3rem",
+      "3xl": "4rem"
+    },
+    "borderRadius": {
+      "none": "0",
+      "sm": "0.125rem",
+      "md": "0.375rem",
+      "lg": "0.5rem",
+      "xl": "0.75rem",
+      "2xl": "1rem",
+      "3xl": "1.5rem",
+      "full": "9999px"
+    },
+    "shadows": {
+      "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      "card": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
+    }
+  },
+  "layoutStructure": {
+    "mainLayout": {
+      "type": "sidebar-main",
+      "sidebar": {
+        "width": "280px",
+        "position": "fixed",
+        "background": "white",
+        "shadow": "md",
+        "padding": "lg"
+      },
+      "mainContent": {
+        "marginLeft": "280px",
+        "padding": "xl",
+        "background": "gray50",
+        "minHeight": "100vh"
+      }
+    },
+    "gridSystem": {
+      "type": "css-grid",
+      "columns": "repeat(auto-fit, minmax(320px, 1fr))",
+      "gap": "lg",
+      "responsive": {
+        "mobile": "1fr",
+        "tablet": "repeat(2, 1fr)",
+        "desktop": "repeat(3, 1fr)"
+      }
+    }
+  },
+  "componentLibrary": {
+    "sidebar": {
+      "structure": {
+        "header": {
+          "logo": true,
+          "userProfile": true,
+          "height": "auto",
+          "padding": "lg"
+        },
+        "navigation": {
+          "type": "vertical-list",
+          "items": ["icon", "text", "badge"],
+          "spacing": "sm",
+          "activeState": "purple background"
+        },
+        "footer": {
+          "promotionalCard": true,
+          "illustration": true,
+          "ctaButton": true
+        }
+      },
+      "styling": {
+        "background": "white",
+        "border": "none",
+        "shadow": "md",
+        "borderRadius": "none"
+      }
+    },
+    "cards": {
+      "baseCard": {
+        "background": "white",
+        "borderRadius": "xl",
+        "shadow": "card",
+        "padding": "lg",
+        "border": "none"
+      },
+      "variants": {
+        "statsCard": {
+          "layout": "number-label-vertical",
+          "numberSize": "3xl",
+          "numberWeight": "bold",
+          "labelSize": "sm",
+          "labelColor": "gray500"
+        },
+        "progressCard": {
+          "layout": "header-content-footer",
+          "progressType": "circular",
+          "progressSize": "lg",
+          "progressColor": "purple"
+        },
+        "courseCard": {
+          "layout": "image-content-footer",
+          "imageAspectRatio": "16:9",
+          "imageRadius": "lg",
+          "badgePosition": "top-right"
+        },
+        "userCard": {
+          "layout": "avatar-content-action",
+          "avatarSize": "md",
+          "avatarRadius": "full"
+        }
+      }
+    },
+    "navigation": {
+      "menuItem": {
+        "height": "48px",
+        "padding": "sm lg",
+        "borderRadius": "lg",
+        "iconSize": "20px",
+        "textSize": "sm",
+        "gap": "md",
+        "states": {
+          "default": {
+            "background": "transparent",
+            "color": "gray600"
+          },
+          "hover": {
+            "background": "gray100",
+            "color": "gray700"
+          },
+          "active": {
+            "background": "purple",
+            "color": "white"
+          }
+        }
+      }
+    },
+    "buttons": {
+      "primary": {
+        "background": "purple",
+        "color": "white",
+        "padding": "sm lg",
+        "borderRadius": "lg",
+        "fontSize": "sm",
+        "fontWeight": "medium",
+        "shadow": "sm"
+      },
+      "secondary": {
+        "background": "gray100",
+        "color": "gray700",
+        "padding": "sm lg",
+        "borderRadius": "lg",
+        "fontSize": "sm",
+        "fontWeight": "medium"
+      }
+    },
+    "avatars": {
+      "sizes": {
+        "xs": "24px",
+        "sm": "32px",
+        "md": "40px",
+        "lg": "48px",
+        "xl": "64px"
+      },
+      "borderRadius": "full",
+      "border": "2px solid white",
+      "shadow": "sm"
+    },
+    "badges": {
+      "small": {
+        "padding": "xs sm",
+        "fontSize": "xs",
+        "fontWeight": "medium",
+        "borderRadius": "full"
+      },
+      "variants": {
+        "success": {
+          "background": "success",
+          "color": "white"
+        },
+        "warning": {
+          "background": "warning",
+          "color": "white"
+        },
+        "info": {
+          "background": "info",
+          "color": "white"
+        }
+      }
+    },
+    "progressIndicators": {
+      "circular": {
+        "size": "64px",
+        "strokeWidth": "4px",
+        "backgroundColor": "gray200",
+        "progressColor": "purple",
+        "centerText": true,
+        "centerTextSize": "sm",
+        "centerTextWeight": "semibold"
+      },
+      "linear": {
+        "height": "8px",
+        "borderRadius": "full",
+        "backgroundColor": "gray200",
+        "progressColor": "purple"
+      }
+    }
+  },
+  "interactions": {
+    "hover": {
+      "cards": {
+        "transform": "translateY(-2px)",
+        "shadow": "lg",
+        "transition": "all 0.2s ease"
+      },
+      "buttons": {
+        "transform": "translateY(-1px)",
+        "shadow": "md",
+        "transition": "all 0.2s ease"
+      }
+    },
+    "focus": {
+      "outline": "2px solid purple",
+      "outlineOffset": "2px"
+    },
+    "active": {
+      "transform": "scale(0.98)",
+      "transition": "transform 0.1s ease"
+    }
+  },
+  "responsive": {
+    "breakpoints": {
+      "mobile": "640px",
+      "tablet": "768px",
+      "desktop": "1024px",
+      "large": "1280px"
+    },
+    "adaptations": {
+      "mobile": {
+        "sidebar": "hidden",
+        "navigation": "bottom-tabs",
+        "grid": "1fr",
+        "padding": "md"
+      },
+      "tablet": {
+        "sidebar": "overlay",
+        "grid": "repeat(2, 1fr)",
+        "padding": "lg"
+      },
+      "desktop": {
+        "sidebar": "fixed",
+        "grid": "repeat(3, 1fr)",
+        "padding": "xl"
+      }
+    }
+  },
+  "animations": {
+    "pageTransition": {
+      "duration": "300ms",
+      "easing": "ease-in-out",
+      "properties": ["opacity", "transform"]
+    },
+    "cardEntrance": {
+      "duration": "200ms",
+      "easing": "ease-out",
+      "delay": "stagger-100ms"
+    },
+    "microInteractions": {
+      "duration": "150ms",
+      "easing": "ease-in-out"
+    }
+  },
+  "accessibility": {
+    "focusVisible": true,
+    "keyboardNavigation": true,
+    "screenReaderSupport": true,
+    "colorContrast": "WCAG AA",
+    "minimumTouchTarget": "44px"
+  },
+  "implementationGuidelines": {
+    "framework": "React + TypeScript",
+    "styling": "Tailwind CSS",
+    "stateManagement": "React Hooks",
+    "responsive": "Mobile-first approach",
+    "performance": "Lazy loading for images and components",
+    "codeStructure": {
+      "components": "Atomic design methodology",
+      "naming": "BEM-inspired class names",
+      "organization": "Feature-based folder structure"
+    }
+  }
+}
