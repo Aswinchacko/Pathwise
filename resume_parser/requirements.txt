@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 spacy
 python-multipart
 pymupdf

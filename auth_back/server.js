@@ -4,6 +4,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const authRoutes = require('./routes/auth')
+const discussionRoutes = require('./routes/discussions')
 
 const app = express()
 
@@ -18,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/pathwise'
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/discussions', discussionRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
