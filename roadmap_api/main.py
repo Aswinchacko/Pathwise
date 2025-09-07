@@ -13,6 +13,16 @@ import os
 
 app = FastAPI(title="Roadmap Generator API", version="1.0.0")
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    try:
+        # Test MongoDB connection
+        db.admin.command('ping')
+        return {"status": "healthy", "service": "roadmap-api", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "service": "roadmap-api", "database": "disconnected", "error": str(e)}
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -43,6 +53,7 @@ try:
         for _, row in df.iterrows():
             roadmap_doc = {
                 "csv_id": int(row['id']),
+                "title": row['goal'],  # Add explicit title field
                 "goal": row['goal'],
                 "domain": row['domain'],
                 "roadmap_text": row['roadmap'],
@@ -69,6 +80,7 @@ class RoadmapRequest(BaseModel):
 
 class RoadmapResponse(BaseModel):
     id: str
+    title: str
     goal: str
     domain: str
     steps: List[dict]
@@ -191,7 +203,7 @@ async def root():
 
 @app.post("/api/roadmap/generate-roadmap", response_model=RoadmapResponse)
 async def generate_roadmap(request: RoadmapRequest):
-    """Generate a roadmap based on goal and domain"""
+    """Generate a roadmap based on goal and domain and store/update in MongoDB"""
     try:
         # Find best matching roadmap from MongoDB
         best_match = find_best_roadmap(request.goal, request.domain)
@@ -211,25 +223,75 @@ async def generate_roadmap(request: RoadmapRequest):
         
         response = RoadmapResponse(
             id=roadmap_id,
+            title=request.goal,
             goal=request.goal,
             domain=best_match['domain'],
             steps=steps,
             created_at=datetime.now().isoformat()
         )
         
-        # Save to user roadmaps collection in MongoDB if user_id provided
+        # Store/Update roadmap in MongoDB
+        roadmap_doc = {
+            "roadmap_id": roadmap_id,
+            "title": request.goal,  # Add explicit title field
+            "goal": request.goal,
+            "domain": best_match['domain'],
+            "steps": steps,
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+            "source": "user_generated",
+            "user_id": request.user_id,
+            "base_roadmap_id": best_match.get('_id'),  # Reference to original roadmap
+            "generation_count": 1
+        }
+        
+        # Check if user already has a roadmap for this goal
         if request.user_id:
-            user_roadmap_doc = {
+            existing_roadmap = roadmap_collection.find_one({
                 "user_id": request.user_id,
-                "roadmap_id": roadmap_id,
                 "goal": request.goal,
-                "domain": best_match['domain'],
-                "steps": steps,
-                "created_at": datetime.now(),
                 "source": "user_generated"
-            }
-            roadmap_collection.insert_one(user_roadmap_doc)
-            print(f"Saved roadmap for user {request.user_id}")
+            })
+            
+            if existing_roadmap:
+                # Update existing roadmap
+                roadmap_doc["generation_count"] = existing_roadmap.get("generation_count", 1) + 1
+                roadmap_doc["roadmap_id"] = existing_roadmap["roadmap_id"]  # Keep same ID
+                roadmap_doc["created_at"] = existing_roadmap["created_at"]  # Keep original creation date
+                
+                result = roadmap_collection.update_one(
+                    {
+                        "user_id": request.user_id,
+                        "goal": request.goal,
+                        "source": "user_generated"
+                    },
+                    {
+                        "$set": {
+                            "title": request.goal,  # Update title field
+                            "domain": best_match['domain'],
+                            "steps": steps,
+                            "updated_at": datetime.now(),
+                            "generation_count": roadmap_doc["generation_count"],
+                            "base_roadmap_id": best_match.get('_id')
+                        }
+                    }
+                )
+                
+                if result.modified_count > 0:
+                    print(f"Updated existing roadmap for user {request.user_id} (generation #{roadmap_doc['generation_count']})")
+                else:
+                    print(f"No changes made to roadmap for user {request.user_id}")
+                
+                # Update response with existing roadmap ID
+                response.id = existing_roadmap["roadmap_id"]
+            else:
+                # Insert new roadmap
+                roadmap_collection.insert_one(roadmap_doc)
+                print(f"Created new roadmap for user {request.user_id}")
+        else:
+            # Insert new roadmap without user_id
+            roadmap_collection.insert_one(roadmap_doc)
+            print(f"Created new roadmap (no user)")
         
         return response
         
@@ -299,7 +361,7 @@ async def get_user_roadmaps(user_id: str):
         # Get user roadmaps from MongoDB
         user_roadmaps = list(roadmap_collection.find(
             {"user_id": user_id, "source": "user_generated"}
-        ).sort("created_at", -1))
+        ).sort("updated_at", -1))  # Sort by updated_at to show most recently modified first
         
         # Convert MongoDB documents to dict format
         roadmaps = []
@@ -307,10 +369,13 @@ async def get_user_roadmaps(user_id: str):
             roadmap_dict = {
                 "_id": str(roadmap["_id"]),
                 "id": roadmap["roadmap_id"],
+                "title": roadmap.get("title", roadmap["goal"]),  # Use title field, fallback to goal
                 "goal": roadmap["goal"],
                 "domain": roadmap["domain"],
                 "steps": roadmap["steps"],
-                "created_at": roadmap["created_at"].isoformat()
+                "created_at": roadmap["created_at"].isoformat(),
+                "updated_at": roadmap.get("updated_at", roadmap["created_at"]).isoformat(),
+                "generation_count": roadmap.get("generation_count", 1)
             }
             roadmaps.append(roadmap_dict)
         
@@ -319,6 +384,46 @@ async def get_user_roadmaps(user_id: str):
     except Exception as e:
         print(f"Error getting user roadmaps: {e}")
         return UserRoadmapsResponse(roadmaps=[])
+
+@app.get("/api/roadmap/roadmaps/all")
+async def get_all_generated_roadmaps(limit: int = 50, skip: int = 0):
+    """Get all generated roadmaps from MongoDB"""
+    try:
+        # Get all user-generated roadmaps
+        roadmaps = list(roadmap_collection.find(
+            {"source": "user_generated"}
+        ).sort("updated_at", -1).skip(skip).limit(limit))
+        
+        # Convert MongoDB documents to dict format
+        roadmap_list = []
+        for roadmap in roadmaps:
+            roadmap_dict = {
+                "_id": str(roadmap["_id"]),
+                "id": roadmap["roadmap_id"],
+                "title": roadmap.get("title", roadmap["goal"]),  # Use title field, fallback to goal
+                "goal": roadmap["goal"],
+                "domain": roadmap["domain"],
+                "steps": roadmap["steps"],
+                "created_at": roadmap["created_at"].isoformat(),
+                "updated_at": roadmap.get("updated_at", roadmap["created_at"]).isoformat(),
+                "generation_count": roadmap.get("generation_count", 1),
+                "user_id": roadmap.get("user_id")
+            }
+            roadmap_list.append(roadmap_dict)
+        
+        # Get total count
+        total_count = roadmap_collection.count_documents({"source": "user_generated"})
+        
+        return {
+            "roadmaps": roadmap_list,
+            "total": total_count,
+            "limit": limit,
+            "skip": skip
+        }
+        
+    except Exception as e:
+        print(f"Error getting all roadmaps: {e}")
+        return {"roadmaps": [], "total": 0, "limit": limit, "skip": skip}
 
 @app.delete("/api/roadmap/roadmaps/{roadmap_id}")
 async def delete_roadmap(roadmap_id: str, user_id: str):
