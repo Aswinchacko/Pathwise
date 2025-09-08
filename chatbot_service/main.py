@@ -452,10 +452,17 @@ async def chat(message: ChatMessage):
         # Update chat title if it's the first message
         if len(chat.get("messages", [])) == 0:
             title = message.message[:50] + "..." if len(message.message) > 50 else message.message
-            chats_collection.update_one(
-                {"_id": chat_id},
-                {"$set": {"title": title}}
-            )
+            if USE_MONGODB:
+                try:
+                    chats_collection.update_one(
+                        {"_id": ObjectId(chat_id)},
+                        {"$set": {"title": title}}
+                    )
+                except:
+                    pass
+            else:
+                if chat_id in in_memory_chats:
+                    in_memory_chats[chat_id]["title"] = title
         
         return ChatResponse(
             response=result["response"],
@@ -596,7 +603,16 @@ async def get_chat_messages(user_id: str, chat_id: str):
 async def delete_chat(user_id: str, chat_id: str):
     """Delete a chat"""
     try:
-        result = chats_collection.delete_one({"_id": chat_id, "userId": user_id})
+        if not USE_MONGODB:
+            # In-memory storage
+            if chat_id in in_memory_chats and in_memory_chats[chat_id]["userId"] == user_id:
+                del in_memory_chats[chat_id]
+                return {"message": "Chat deleted successfully"}
+            else:
+                raise HTTPException(status_code=404, detail="Chat not found")
+        
+        # MongoDB storage
+        result = chats_collection.delete_one({"_id": ObjectId(chat_id), "userId": user_id})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Chat not found")
         
@@ -610,8 +626,18 @@ async def delete_chat(user_id: str, chat_id: str):
 async def update_chat_title(user_id: str, chat_id: str, title: str):
     """Update chat title"""
     try:
+        if not USE_MONGODB:
+            # In-memory storage
+            if chat_id in in_memory_chats and in_memory_chats[chat_id]["userId"] == user_id:
+                in_memory_chats[chat_id]["title"] = title
+                in_memory_chats[chat_id]["updatedAt"] = datetime.now()
+                return {"message": "Title updated successfully"}
+            else:
+                raise HTTPException(status_code=404, detail="Chat not found")
+        
+        # MongoDB storage
         result = chats_collection.update_one(
-            {"_id": chat_id, "userId": user_id},
+            {"_id": ObjectId(chat_id), "userId": user_id},
             {"$set": {"title": title, "updatedAt": datetime.now()}}
         )
         
@@ -625,4 +651,4 @@ async def update_chat_title(user_id: str, chat_id: str, title: str):
         raise HTTPException(status_code=500, detail=f"Error updating title: {str(e)}")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host="0.0.0.0", port=8004)

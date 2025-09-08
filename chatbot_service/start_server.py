@@ -10,16 +10,16 @@ import os
 def main():
     """Start the chatbot service"""
     print("🤖 Starting PathWise Chatbot Service...")
-    print("📍 Service will be available at: http://localhost:8002")
-    print("📚 API Documentation: http://localhost:8002/docs")
-    print("🔍 Health Check: http://localhost:8002/health")
+    print("📍 Service will be available at: http://localhost:8004")
+    print("📚 API Documentation: http://localhost:8004/docs")
+    print("🔍 Health Check: http://localhost:8004/health")
     print("\n" + "="*50)
     
     try:
         uvicorn.run(
             "main:app",
             host="0.0.0.0",
-            port=8002,
+            port=8004,
             reload=True,
             log_level="info"
         )

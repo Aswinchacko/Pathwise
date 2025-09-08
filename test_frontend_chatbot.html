@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Frontend Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Chatbot Frontend Test</h1>
+    <div id="status"></div>
+    <div id="chats"></div>
+    <button onclick="testChatbot()">Test Chatbot</button>
+    <button onclick="loadChatHistory()">Load Chat History</button>
+    <button onclick="createNewChat()">Create New Chat</button>
+
+    <script>
+        const CHATBOT_API_URL = 'http://localhost:8004';
+        const userId = 'test_user_frontend_' + Date.now();
+
+        async function testChatbot() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = 'Testing chatbot...';
+
+            try {
+                // Test health
+                const healthResponse = await axios.get(`${CHATBOT_API_URL}/health`);
+                console.log('Health check:', healthResponse.data);
+
+                // Test chat
+                const chatResponse = await axios.post(`${CHATBOT_API_URL}/chat`, {
+                    message: 'Hello from frontend test',
+                    user_id: userId
+                });
+                console.log('Chat response:', chatResponse.data);
+
+                statusDiv.innerHTML = `
+                    <p>✅ Health: ${healthResponse.data.status}</p>
+                    <p>✅ Chat: ${chatResponse.data.response.substring(0, 50)}...</p>
+                    <p>✅ Chat ID: ${chatResponse.data.chat_id}</p>
+                `;
+
+                // Load chat history
+                await loadChatHistory();
+
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function loadChatHistory() {
+            const chatsDiv = document.getElementById('chats');
+            chatsDiv.innerHTML = 'Loading chat history...';
+
+            try {
+                const response = await axios.get(`${CHATBOT_API_URL}/chats/${userId}`);
+                console.log('Chat history:', response.data);
+
+                if (response.data.chats && response.data.chats.length > 0) {
+                    chatsDiv.innerHTML = `
+                        <h3>Chat History (${response.data.chats.length} chats):</h3>
+                        ${response.data.chats.map(chat => `
+                            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                                <strong>${chat.title}</strong><br>
+                                <small>ID: ${chat.chat_id}</small><br>
+                                <small>Last message: ${new Date(chat.last_message_at).toLocaleString()}</small><br>
+                                <small>Messages: ${chat.message_count}</small>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    chatsDiv.innerHTML = '<p>No chats found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                chatsDiv.innerHTML = `❌ Error loading chat history: ${error.message}`;
+            }
+        }
+
+        async function createNewChat() {
+            try {
+                const response = await axios.post(`${CHATBOT_API_URL}/chats/new`, {
+                    user_id: userId,
+                    title: 'Frontend Test Chat'
+                });
+                console.log('New chat created:', response.data);
+                
+                // Reload chat history
+                await loadChatHistory();
+            } catch (error) {
+                console.error('Error creating chat:', error);
+            }
+        }
+
+        // Load chat history on page load
+        window.onload = loadChatHistory;
+    </script>
+</body>
+</html>

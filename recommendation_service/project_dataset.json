@@ -804,7 +804,7 @@
     "project_type": "application",
     "domain": "web-development",
     "complexity_score": 5,
-    "popularity_score": 7.3,
+    "popularity_score": 8.9,
     "tags": [
       "web",
       "application",
@@ -839,7 +839,7 @@
     "project_type": "application",
     "domain": "web-development",
     "complexity_score": 8,
-    "popularity_score": 7.4,
+    "popularity_score": 8.1,
     "tags": [
       "web",
       "application",
@@ -874,7 +874,7 @@
     "project_type": "application",
     "domain": "web-development",
     "complexity_score": 9,
-    "popularity_score": 7.7,
+    "popularity_score": 7.6,
     "tags": [
       "web",
       "application",
@@ -909,7 +909,7 @@
     "project_type": "application",
     "domain": "web-development",
     "complexity_score": 6,
-    "popularity_score": 7.3,
+    "popularity_score": 7.7,
     "tags": [
       "web",
       "application",
@@ -979,7 +979,7 @@
     "project_type": "analysis",
     "domain": "data-science",
     "complexity_score": 7,
-    "popularity_score": 8.3,
+    "popularity_score": 8.5,
     "tags": [
       "ml",
       "analysis",
@@ -1016,7 +1016,7 @@
     "project_type": "analysis",
     "domain": "data-science",
     "complexity_score": 8,
-    "popularity_score": 8.4,
+    "popularity_score": 8.5,
     "tags": [
       "ml",
       "analysis",
@@ -1053,7 +1053,7 @@
     "project_type": "analysis",
     "domain": "data-science",
     "complexity_score": 6,
-    "popularity_score": 7.7,
+    "popularity_score": 8.8,
     "tags": [
       "ml",
       "analysis",
@@ -1090,7 +1090,7 @@
     "project_type": "analysis",
     "domain": "data-science",
     "complexity_score": 9,
-    "popularity_score": 8.8,
+    "popularity_score": 9.0,
     "tags": [
       "ml",
       "analysis",

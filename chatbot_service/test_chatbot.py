@@ -9,7 +9,7 @@ import time
 
 def test_chatbot_service():
     """Test the chatbot service endpoints"""
-    base_url = "http://localhost:8002"
+    base_url = "http://localhost:8004"
     
     print("🧪 Testing PathWise Chatbot Service...")
     print("=" * 50)

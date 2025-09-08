@@ -24,7 +24,7 @@ MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
 try:
     client = AsyncIOMotorClient(MONGODB_URL)
     db = client.pathwise
-    resumes_collection = db.resumes
+    resumes_collection = db.resume
     print(f"Connected to MongoDB at {MONGODB_URL}")
 except Exception as e:
     print(f"MongoDB connection failed: {e}")
@@ -75,6 +75,9 @@ class ResumeListResponse(BaseModel):
     success: bool
     resumes: List[StoredResume] = []
     error: Optional[str] = None
+
+class TextParseRequest(BaseModel):
+    text: str
 
 # Health check endpoint
 @app.get("/health")
@@ -713,8 +716,61 @@ def clean_resume_text(text: str) -> str:
 
 def parse_resume_text(text: str) -> ParsedResume:
     """Parse resume text and extract structured data"""
-    # For this specific resume format, use a custom parser
-    return parse_aswin_resume(text)
+    # Clean the text first
+    cleaned_text = clean_resume_text(text)
+    
+    # Try to detect if it's Aswin's resume format
+    if "ASW IN CHACKO" in cleaned_text or "aswinchacko.me@gmail.com" in cleaned_text:
+        return parse_aswin_resume(cleaned_text)
+    else:
+        # Use general parser for other resumes
+        return parse_general_resume(cleaned_text)
+
+def parse_general_resume(text: str) -> ParsedResume:
+    """General resume parser for standard resume formats"""
+    return ParsedResume(
+        name=extract_name(text),
+        email=extract_email(text),
+        phone=extract_phone(text),
+        location=extract_location(text),
+        summary=extract_summary(text),
+        experience=extract_experience(text),
+        education=extract_education(text),
+        skills=extract_skills(text),
+        languages=extract_languages(text),
+        certifications=extract_certifications(text),
+        projects=extract_projects(text),
+        raw_text=text
+    )
+
+def extract_languages(text: str) -> List[str]:
+    """Extract languages from text"""
+    languages = []
+    
+    # Common language section headers
+    lang_headers = ['languages', 'language', 'linguistic skills']
+    
+    # Find languages section
+    lang_section = ""
+    for header in lang_headers:
+        pattern = rf'{header}[:\s]*(.*?)(?=\n\s*(?:experience|education|skills|certifications|projects|achievements|$))'
+        match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+        if match:
+            lang_section = match.group(1)
+            break
+    
+    if not lang_section:
+        return languages
+    
+    # Split by common separators
+    lang_entries = re.split(r'[,;•\n]', lang_section)
+    
+    for entry in lang_entries:
+        lang = entry.strip()
+        if len(lang) > 1 and len(lang) < 50:
+            languages.append(lang)
+    
+    return list(set(languages))
 
 def parse_aswin_resume(text: str) -> ParsedResume:
     """Custom parser for Aswin's resume format"""
@@ -905,7 +961,7 @@ async def parse_resume(file: UploadFile = File(...), user_id: Optional[str] = No
         parsed_data = parse_resume_text(text)
         
         # Store in MongoDB if available
-        if resumes_collection:
+        if resumes_collection is not None:
             stored_resume = StoredResume(
                 user_id=user_id,
                 parsed_data=parsed_data,
@@ -939,9 +995,10 @@ async def parse_resume(file: UploadFile = File(...), user_id: Optional[str] = No
         )
 
 @app.post("/parse-text", response_model=ParseResponse)
-async def parse_resume_text_endpoint(text: str):
+async def parse_resume_text_endpoint(request: TextParseRequest):
     """Parse resume text directly"""
     try:
+        text = request.text
         if not text.strip():
             raise HTTPException(status_code=400, detail="Text cannot be empty")
         
@@ -964,7 +1021,7 @@ async def parse_resume_text_endpoint(text: str):
 async def get_resumes(user_id: Optional[str] = None):
     """Get all resumes for a user or all resumes if no user_id provided"""
     try:
-        if not resumes_collection:
+        if resumes_collection is None:
             return ResumeListResponse(
                 success=False,
                 error="MongoDB not available"

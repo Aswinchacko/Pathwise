@@ -9,7 +9,7 @@ import time
 
 def test_storage():
     """Test if the chatbot is storing data properly"""
-    base_url = "http://localhost:8002"
+    base_url = "http://localhost:8004"
     
     print("🧪 Testing Chatbot Storage...")
     print("=" * 50)
