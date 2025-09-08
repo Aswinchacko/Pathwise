@@ -59,6 +59,15 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'moderator'],
+    default: 'user'
+  },
+  isAdmin: {
+    type: mongoose.Schema.Types.Mixed, // Can be string "true" or boolean true
+    default: false
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -66,6 +75,24 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
+  },
+  profileData: {
+    skills: [String],
+    experience: String,
+    education: String,
+    bio: String,
+    avatar: String
+  },
+  preferences: {
+    emailNotifications: {
+      type: Boolean,
+      default: true
+    },
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'auto'],
+      default: 'auto'
+    }
   }
 }, {
   timestamps: true,

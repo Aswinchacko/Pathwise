@@ -43,7 +43,9 @@ router.post('/register', async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
       }
     })
   } catch (error) {
@@ -87,7 +89,9 @@ router.post('/login', async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
       }
     })
   } catch (error) {
@@ -173,7 +177,9 @@ router.post('/google', async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
       }
     })
   } catch (error) {
@@ -305,7 +311,9 @@ router.post('/github', async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
       }
     })
   } catch (error) {
@@ -425,7 +433,9 @@ router.post('/linkedin', async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
       }
     })
   } catch (error) {
@@ -443,6 +453,8 @@ router.get('/profile', auth, async (req, res) => {
         firstName: req.user.firstName,
         lastName: req.user.lastName,
         email: req.user.email,
+        role: req.user.role,
+        isAdmin: req.user.isAdmin === 'true' || req.user.isAdmin === true,
         lastLogin: req.user.lastLogin,
         createdAt: req.user.createdAt
       }
@@ -470,7 +482,9 @@ router.put('/profile', auth, async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
       }
     })
   } catch (error) {
