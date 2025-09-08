@@ -425,6 +425,68 @@ async def get_all_generated_roadmaps(limit: int = 50, skip: int = 0):
         print(f"Error getting all roadmaps: {e}")
         return {"roadmaps": [], "total": 0, "limit": limit, "skip": skip}
 
+@app.get("/api/roadmap/resources/domain/{domain}")
+async def get_resources_by_domain(domain: str):
+    """Get learning resources for a specific domain"""
+    try:
+        # Get roadmaps for the domain
+        roadmaps = list(roadmap_collection.find({
+            "domain": {"$regex": domain, "$options": "i"}
+        }).limit(10))
+        
+        if not roadmaps:
+            return {"resources": [], "skills": []}
+        
+        # Extract all skills from roadmaps
+        all_skills = set()
+        for roadmap in roadmaps:
+            if roadmap.get('steps'):
+                for step in roadmap['steps']:
+                    if step.get('skills'):
+                        all_skills.update(step['skills'])
+        
+        # Convert to list and return
+        skills_list = list(all_skills)
+        
+        return {
+            "domain": domain,
+            "skills": skills_list,
+            "roadmap_count": len(roadmaps),
+            "message": f"Found {len(skills_list)} skills for {domain} domain"
+        }
+        
+    except Exception as e:
+        print(f"Error getting domain resources: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting domain resources: {str(e)}")
+
+@app.get("/api/roadmap/resources/skills")
+async def get_all_skills():
+    """Get all unique skills from all roadmaps"""
+    try:
+        # Get all roadmaps
+        roadmaps = list(roadmap_collection.find({}))
+        
+        # Extract all skills
+        all_skills = set()
+        for roadmap in roadmaps:
+            if roadmap.get('steps'):
+                for step in roadmap['steps']:
+                    if step.get('skills'):
+                        all_skills.update(step['skills'])
+        
+        # Convert to list and return
+        skills_list = list(all_skills)
+        
+        return {
+            "skills": skills_list,
+            "total_skills": len(skills_list),
+            "total_roadmaps": len(roadmaps)
+        }
+        
+    except Exception as e:
+        print(f"Error getting all skills: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting all skills: {str(e)}")
+
 @app.delete("/api/roadmap/roadmaps/{roadmap_id}")
 async def delete_roadmap(roadmap_id: str, user_id: str):
     """Delete a saved roadmap from MongoDB"""

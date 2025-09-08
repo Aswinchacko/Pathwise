@@ -1,0 +1,73 @@
+Passionate AI/ML and Full-Stack Developer (Integrated MCA, graduating 2026) with hands-on experience
+in building scalable web applications, ML-driven microservices, and interactive frontends. Skilled in
+Python, React.js, MySQL, and LangChain, with projects spanning NLP, EDA tools, and microservice-based
+architectures. Actively seeking an AI/ML Internship to apply skills in computer vision, object detection, and
+LLM-powered assistants.ASW IN CHACKO
+AI/ML & FULL-STACK DEVELOPER
+SUM M ARY
+SKILLS
+Programming Languages: Python, Java, JavaScript, C, C++
+Web Development: React.js (Hooks, Context API), Node.js, Express.js, HTML5, CSS3, PHP
+Database: MongoDB, MySQL
+Machine Learning & Data Analysis: Logistic Regression, NLP basics, Pandas, Matplotlib
+Frameworks & Tools: Flask, FastAPI, Docker, Git, Postman, Firebase
+Soft Skills: Team Collaboration, Leadership, Self-paced Learning, Resilience
+Concepts: Data Structures & Algorithms, OOP, REST APIs, Microservices
+PathWise – Personalized Learning & Roadmap Engine | React.js, Flask, FastAPI, MongoDB
+Built a modular MERN + Python system with microservices for personalized learning
+recommendations.
+Integrated Firebase Auth for secure login and MongoDB for data storage.
+Added features for progress tracking, goal-setting, and roadmap generation.
+Freshire Management App (Dec 2024 – May 2025)
+Tech Stack: React.js, MongoDB, Node.js
+Designed for Freshire, a student-led tech community focused on learning and collaboration.
+Built features for structured project management, role assignment, and team coordination.
+Developed using the MERN stack for scalability and responsive performance.Mini Exploratory Data Analysis Tool | Flask, Pandas, Matplotlib, Docker
+Developed a web-based tool where users upload CSVs for automated EDA.
+Implemented data preprocessing and visualizations (bar charts, heatmaps).
+Automated PDF report generation with Matplotlib plots and insights.PROJECTS
+Freelancer Scam Detector (ScamShield) | FastAPI, Python, Logistic Regression, React.js, Docker
+Built an ML-based microservice to detect scam job listings using NLP techniques
+(CountVectorizer + Logistic Regression).
+Designed REST APIs with FastAPI and integrated a React.js frontend for real-time predictions.
+Containerized the system with Docker for seamless deployment.
+Improved detection accuracy and deployed as a containerized microservice.+91 9645937029 | Vanchimala P.O, Kanjirappally, Kottayam, Kerala – 686508
+aswinchacko.me@gmail.com
+www.linkedin.com/in/aswinchacko | github.com/Aswinchacko
+Certified in Microservices Architecture – Hands-on Workshop
+Amal Jyothi College of Engineering Autonomous (Jun 2025)CERTIFICATIONS & ACHIEVEMENTS
+I n t e g r a t e d  M C A
+Amal Jyothi College of Engineering (Autonomous), Kanjirappally
+CGPA: 8.24 • Expected Graduation: 2026
+Relevant Courses: Data Structures, Algorithms, Operating Systems, Machine Learning,
+Software EngineeringEDUCATION
+W e b  D e s i g n e r  &  B a c k e n d  D e v e l o p e r
+Freelance (Self-employed)
+Jun 2022 - Oct 2024
+Delivered scalable full-stack web apps using Node.js, Express, and React.js.
+Designed MySQL/MongoDB databases, implemented secure authentication, and deployed client-
+focused solutions.
+C o - F o u n d e r ,  F r e s h i r e   
+Student Freelancing Platform
+Nov 2024 – Present
+Led a student team to build Freshire, a freelancing & learning platform.
+Coordinated development of MERN applications and guided peers in ML adoption.EXPERIENCES e n i o r  S e c o n d a r y  E d u c a t i o n
+St. Thomas Higher Secondary School, Pala, Kerala
+Directorate of Higher Secondary Education • Percentage : 90% • 2019 - 2021 
+H i g h e r  S e c o n d a r y  E d u c a t i o n
+Jyothi Public School, Paika, Kerala
+Central Board of Secondary Education  • Percentage : 73% • 2018 - 2019 
+S o c i a l  M e d i a  C o n t e n t  C r e a t o r
+Personal Branding
+Jan 2023 - Present
+Built a tech-focused personal brand around freelancing and student growth.
+Used marketing psychology and storytelling to grow to 35K+ followers in 2.5 months.
+Created viral reels (1M+ views) and fostered a loyal, engaged community of aspiring freelancers
+and learners.
+Resource Person – MERN Stack Development Workshop
+Amal Jyothi College of Engineering Autonomous (Jun 2025)Data Analytics Domain Expertise Workshop - SQL, EDA, and Visualization
+Amal Jyothi College of Engineering Autonomous (Jun 2025)
+Student Volunteer – NASA Space Apps Challenge 2024
+Kanjirapally EditionGenerative AI Professional Certificate – Oracle (Jul 2025)
+Completed comprehensive training and exam on Generative AI concepts and applications.
+
