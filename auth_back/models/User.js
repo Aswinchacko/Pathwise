@@ -76,6 +76,39 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  // Extended profile fields from resume integration
+  full_name: String,
+  phone: String,
+  location: String,
+  summary: String,
+  skills: [String],
+  education: [{
+    degree: String,
+    institution: String,
+    year_start: String,
+    year_end: String,
+    dates: String,
+    gpa: String
+  }],
+  experience: [{
+    role: String,
+    title: String, // Support both 'role' and 'title'
+    company: String,
+    year_start: String,
+    year_end: String,
+    dates: String,
+    description: String
+  }],
+  projects: [{
+    title: String,
+    description: String,
+    technologies: [String],
+    url: String
+  }],
+  certifications: [String],
+  languages: [String],
+  
+  // Legacy profile data for backward compatibility
   profileData: {
     skills: [String],
     experience: String,
@@ -83,10 +116,15 @@ const userSchema = new mongoose.Schema({
     bio: String,
     avatar: String
   },
+  
   preferences: {
     emailNotifications: {
       type: Boolean,
       default: true
+    },
+    weeklyReports: {
+      type: Boolean,
+      default: false
     },
     theme: {
       type: String,

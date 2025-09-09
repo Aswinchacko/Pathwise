@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Logout Functionality</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Logout Functionality Test</h1>
+    <p>This test simulates the logout process to help debug any issues.</p>
+
+    <div class="test-section">
+        <h2>1. Test Authentication Storage</h2>
+        <button class="button" onclick="testLocalStorage()">Check Current Auth Data</button>
+        <button class="button" onclick="simulateLogin()">Simulate Login</button>
+        <div id="storage-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Logout Function</h2>
+        <button class="button" onclick="testLogout()">Test Logout Process</button>
+        <button class="button" onclick="testLogoutWithRedirect()">Test Logout + Redirect</button>
+        <div id="logout-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Manual Navigation Test</h2>
+        <button class="button" onclick="testNavigation()">Test Navigation</button>
+        <div id="navigation-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Debug Information</h2>
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        // Simulate AuthService functionality
+        const authService = {
+            login: (email, password) => {
+                const userData = {
+                    id: 'test-user-123',
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: email,
+                    role: 'user',
+                    isAdmin: false
+                };
+                const token = 'test-token-' + Date.now();
+                
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(userData));
+                
+                return { token, user: userData };
+            },
+            
+            logout: () => {
+                console.log('AuthService.logout() called');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                console.log('Token and user data removed from localStorage');
+            },
+            
+            getCurrentUser: () => {
+                const user = localStorage.getItem('user');
+                return user ? JSON.parse(user) : null;
+            },
+            
+            getToken: () => {
+                return localStorage.getItem('token');
+            },
+            
+            isAuthenticated: () => {
+                return !!localStorage.getItem('token');
+            }
+        };
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testLocalStorage() {
+            const token = authService.getToken();
+            const user = authService.getCurrentUser();
+            const isAuth = authService.isAuthenticated();
+            
+            let message = `
+                <strong>Current Authentication Status:</strong><br>
+                • Token: ${token ? 'Present (' + token.substring(0, 20) + '...)' : 'Not found'}<br>
+                • User: ${user ? user.firstName + ' ' + user.lastName + ' (' + user.email + ')' : 'Not found'}<br>
+                • Is Authenticated: ${isAuth ? 'Yes' : 'No'}
+            `;
+            
+            updateStatus('storage-status', message, isAuth ? 'success' : 'error');
+        }
+
+        function simulateLogin() {
+            try {
+                const result = authService.login('test@example.com', 'password');
+                updateStatus('storage-status', `
+                    <strong>Login Successful!</strong><br>
+                    • User: ${result.user.firstName} ${result.user.lastName}<br>
+                    • Email: ${result.user.email}<br>
+                    • Token: ${result.token.substring(0, 20)}...
+                `, 'success');
+            } catch (error) {
+                updateStatus('storage-status', `Login failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testLogout() {
+            console.log('=== Testing Logout Process ===');
+            
+            // Check initial state
+            const initialAuth = authService.isAuthenticated();
+            console.log('Initial authentication state:', initialAuth);
+            
+            if (!initialAuth) {
+                updateStatus('logout-status', 'No user logged in. Please simulate login first.', 'error');
+                return;
+            }
+            
+            try {
+                // Perform logout
+                console.log('Calling authService.logout()...');
+                authService.logout();
+                
+                // Check final state
+                const finalAuth = authService.isAuthenticated();
+                const finalToken = authService.getToken();
+                const finalUser = authService.getCurrentUser();
+                
+                console.log('Final authentication state:', finalAuth);
+                console.log('Final token:', finalToken);
+                console.log('Final user:', finalUser);
+                
+                if (!finalAuth && !finalToken && !finalUser) {
+                    updateStatus('logout-status', `
+                        <strong>✅ Logout Successful!</strong><br>
+                        • Token cleared: ${!finalToken}<br>
+                        • User data cleared: ${!finalUser}<br>
+                        • Authentication status: ${finalAuth ? 'Still authenticated (ERROR)' : 'Not authenticated (CORRECT)'}
+                    `, 'success');
+                } else {
+                    updateStatus('logout-status', `
+                        <strong>❌ Logout Failed!</strong><br>
+                        • Token cleared: ${!finalToken}<br>
+                        • User data cleared: ${!finalUser}<br>
+                        • Authentication status: ${finalAuth}
+                    `, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Logout error:', error);
+                updateStatus('logout-status', `Logout error: ${error.message}`, 'error');
+            }
+        }
+
+        function testLogoutWithRedirect() {
+            console.log('=== Testing Logout with Redirect ===');
+            
+            if (!authService.isAuthenticated()) {
+                updateStatus('logout-status', 'No user logged in. Please simulate login first.', 'error');
+                return;
+            }
+            
+            try {
+                // Simulate the Settings page logout function
+                console.log('Simulating Settings page logout...');
+                authService.logout();
+                
+                updateStatus('logout-status', `
+                    <strong>Logout completed - would redirect to /login</strong><br>
+                    <em>In the real app, this would call: window.location.href = '/login'</em><br>
+                    • Token cleared: ${!authService.getToken()}<br>
+                    • User cleared: ${!authService.getCurrentUser()}
+                `, 'success');
+                
+                // Note: We don't actually redirect in this test
+                console.log('In real app, would redirect to /login now');
+                
+            } catch (error) {
+                console.error('Logout with redirect error:', error);
+                updateStatus('logout-status', `Logout error: ${error.message}`, 'error');
+            }
+        }
+
+        function testNavigation() {
+            const currentUrl = window.location.href;
+            updateStatus('navigation-status', `
+                <strong>Current URL:</strong> ${currentUrl}<br>
+                <strong>Navigation Test:</strong><br>
+                • Current protocol: ${window.location.protocol}<br>
+                • Current host: ${window.location.host}<br>
+                • Current pathname: ${window.location.pathname}<br>
+                <br>
+                <em>In the Settings component, logout uses: window.location.href = '/login'</em><br>
+                <em>This should work correctly to redirect to the login page.</em>
+            `, 'info');
+        }
+
+        function updateDebugInfo() {
+            const debugInfo = `
+                <div class="code">
+                <strong>Settings.jsx Logout Function:</strong><br>
+                const handleLogout = useCallback(() => {<br>
+                &nbsp;&nbsp;try {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;// Clear authentication data<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;authService.logout()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;// Clear component state<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;setCurrentUser(null)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;setProfile({ ... })<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;setResumes([])<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;// Force full page reload<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;window.location.href = '/login'<br>
+                &nbsp;&nbsp;} catch (err) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;console.error('Logout error:', err)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;window.location.href = '/login'<br>
+                &nbsp;&nbsp;}<br>
+                }, [])
+                </div>
+                
+                <div class="code">
+                <strong>AuthService.logout():</strong><br>
+                logout() {<br>
+                &nbsp;&nbsp;localStorage.removeItem('token')<br>
+                &nbsp;&nbsp;localStorage.removeItem('user')<br>
+                }
+                </div>
+                
+                <strong>Troubleshooting Steps:</strong><br>
+                1. Open browser Developer Tools (F12)<br>
+                2. Go to Settings page in your app<br>
+                3. Click logout button<br>
+                4. Check Console tab for debug messages<br>
+                5. Check Application/Storage tab to verify localStorage is cleared<br>
+                6. Verify redirect to /login occurs<br>
+                <br>
+                <strong>Expected Console Output:</strong><br>
+                • "Logout button clicked"<br>
+                • "handleLogout called"<br>
+                • "Clearing authentication data..."<br>
+                • "Authentication data cleared, clearing component state..."<br>
+                • "Redirecting to login..."<br>
+            `;
+            
+            document.getElementById('debug-info').innerHTML = debugInfo;
+        }
+
+        // Initialize debug info on page load
+        updateDebugInfo();
+        testLocalStorage();
+    </script>
+</body>
+</html>

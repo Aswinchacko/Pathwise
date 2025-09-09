@@ -447,16 +447,33 @@ router.post('/linkedin', async (req, res) => {
 // Get user profile (protected route)
 router.get('/profile', auth, async (req, res) => {
   try {
+    const user = req.user
     res.json({
       user: {
-        id: req.user._id,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        email: req.user.email,
-        role: req.user.role,
-        isAdmin: req.user.isAdmin === 'true' || req.user.isAdmin === true,
-        lastLogin: req.user.lastLogin,
-        createdAt: req.user.createdAt
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+        // Extended profile fields
+        full_name: user.full_name,
+        phone: user.phone,
+        location: user.location,
+        summary: user.summary,
+        skills: user.skills || [],
+        education: user.education || [],
+        experience: user.experience || [],
+        projects: user.projects || [],
+        certifications: user.certifications || [],
+        languages: user.languages || [],
+        preferences: user.preferences || {
+          emailNotifications: true,
+          weeklyReports: false,
+          theme: 'auto'
+        }
       }
     })
   } catch (error) {
@@ -468,11 +485,44 @@ router.get('/profile', auth, async (req, res) => {
 // Update user profile (protected route)
 router.put('/profile', auth, async (req, res) => {
   try {
-    const { firstName, lastName } = req.body
+    const {
+      firstName,
+      lastName,
+      full_name,
+      phone,
+      location,
+      summary,
+      skills,
+      education,
+      experience,
+      projects,
+      certifications,
+      languages,
+      preferences
+    } = req.body
 
     const user = await User.findById(req.user._id)
-    if (firstName) user.firstName = firstName
-    if (lastName) user.lastName = lastName
+    
+    // Update basic fields
+    if (firstName !== undefined) user.firstName = firstName
+    if (lastName !== undefined) user.lastName = lastName
+    
+    // Update extended profile fields
+    if (full_name !== undefined) user.full_name = full_name
+    if (phone !== undefined) user.phone = phone
+    if (location !== undefined) user.location = location
+    if (summary !== undefined) user.summary = summary
+    if (skills !== undefined) user.skills = skills
+    if (education !== undefined) user.education = education
+    if (experience !== undefined) user.experience = experience
+    if (projects !== undefined) user.projects = projects
+    if (certifications !== undefined) user.certifications = certifications
+    if (languages !== undefined) user.languages = languages
+    
+    // Update preferences
+    if (preferences !== undefined) {
+      user.preferences = { ...user.preferences, ...preferences }
+    }
 
     await user.save()
 
@@ -484,11 +534,127 @@ router.put('/profile', auth, async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
-        isAdmin: user.isAdmin === 'true' || user.isAdmin === true
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true,
+        full_name: user.full_name,
+        phone: user.phone,
+        location: user.location,
+        summary: user.summary,
+        skills: user.skills || [],
+        education: user.education || [],
+        experience: user.experience || [],
+        projects: user.projects || [],
+        certifications: user.certifications || [],
+        languages: user.languages || [],
+        preferences: user.preferences
       }
     })
   } catch (error) {
     console.error('Update profile error:', error)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// Update profile from resume data (protected route)
+router.put('/profile/from-resume', auth, async (req, res) => {
+  try {
+    const resumeData = req.body
+    const user = await User.findById(req.user._id)
+    
+    // Map resume data to user profile fields
+    if (resumeData.name) {
+      const nameParts = resumeData.name.split(' ')
+      user.firstName = nameParts[0] || user.firstName
+      user.lastName = nameParts.slice(1).join(' ') || user.lastName
+      user.full_name = resumeData.name
+    }
+    
+    if (resumeData.email && !user.email) user.email = resumeData.email
+    if (resumeData.phone) user.phone = resumeData.phone
+    if (resumeData.location) user.location = resumeData.location
+    if (resumeData.summary) user.summary = resumeData.summary
+    
+    // Merge skills (avoid duplicates)
+    if (resumeData.skills && Array.isArray(resumeData.skills)) {
+      const existingSkills = user.skills || []
+      const newSkills = resumeData.skills.filter(skill => 
+        !existingSkills.some(existing => 
+          existing.toLowerCase() === skill.toLowerCase()
+        )
+      )
+      user.skills = [...existingSkills, ...newSkills]
+    }
+    
+    // Update education
+    if (resumeData.education && Array.isArray(resumeData.education)) {
+      user.education = resumeData.education.map(edu => ({
+        degree: edu.degree || edu.title,
+        institution: edu.institution || edu.school,
+        year_start: edu.year_start || edu.start_year,
+        year_end: edu.year_end || edu.end_year,
+        dates: edu.dates,
+        gpa: edu.gpa
+      }))
+    }
+    
+    // Update experience
+    if (resumeData.experience && Array.isArray(resumeData.experience)) {
+      user.experience = resumeData.experience.map(exp => ({
+        role: exp.role || exp.title || exp.position,
+        title: exp.title || exp.role || exp.position,
+        company: exp.company || exp.employer,
+        year_start: exp.year_start || exp.start_year,
+        year_end: exp.year_end || exp.end_year,
+        dates: exp.dates,
+        description: exp.description || exp.responsibilities
+      }))
+    }
+    
+    // Update projects
+    if (resumeData.projects && Array.isArray(resumeData.projects)) {
+      user.projects = resumeData.projects.map(project => ({
+        title: project.title || project.name,
+        description: project.description,
+        technologies: project.technologies || project.tech_stack || [],
+        url: project.url || project.link
+      }))
+    }
+    
+    // Update certifications
+    if (resumeData.certifications && Array.isArray(resumeData.certifications)) {
+      user.certifications = resumeData.certifications
+    }
+    
+    // Update languages
+    if (resumeData.languages && Array.isArray(resumeData.languages)) {
+      user.languages = resumeData.languages
+    }
+
+    await user.save()
+
+    res.json({
+      message: 'Profile updated from resume successfully',
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin === 'true' || user.isAdmin === true,
+        full_name: user.full_name,
+        phone: user.phone,
+        location: user.location,
+        summary: user.summary,
+        skills: user.skills || [],
+        education: user.education || [],
+        experience: user.experience || [],
+        projects: user.projects || [],
+        certifications: user.certifications || [],
+        languages: user.languages || [],
+        preferences: user.preferences
+      }
+    })
+  } catch (error) {
+    console.error('Update profile from resume error:', error)
     res.status(500).json({ message: 'Server error' })
   }
 })

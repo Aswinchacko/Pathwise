@@ -129,9 +129,12 @@ router.get('/users', auth, adminAuth, async (req, res) => {
 router.put('/users/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params
-    const { role, isActive } = req.body
+    const { firstName, lastName, email, role, isActive } = req.body
 
     const updateData = {}
+    if (firstName !== undefined) updateData.firstName = firstName
+    if (lastName !== undefined) updateData.lastName = lastName
+    if (email !== undefined) updateData.email = email
     if (role !== undefined) updateData.role = role
     if (isActive !== undefined) updateData.isActive = isActive
 
@@ -230,36 +233,91 @@ router.get('/system/health', auth, adminAuth, async (req, res) => {
 router.get('/activity', auth, adminAuth, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 50
+    const activityLimit = Math.max(Math.floor(limit / 3), 5) // Distribute limit across activity types
 
     // Get recent user registrations
     const recentUsers = await User.find()
       .sort({ createdAt: -1 })
-      .limit(limit / 2)
+      .limit(activityLimit)
       .select('firstName lastName email createdAt')
 
     // Get recent discussions
     const recentDiscussions = await Discussion.find()
       .sort({ createdAt: -1 })
-      .limit(limit / 2)
+      .limit(activityLimit)
       .populate('author', 'firstName lastName')
       .select('title author createdAt')
 
+    // Get recent user logins (users with recent lastLogin)
+    const recentLogins = await User.find({ 
+      lastLogin: { $exists: true, $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } 
+    })
+      .sort({ lastLogin: -1 })
+      .limit(activityLimit)
+      .select('firstName lastName email lastLogin')
+
+    // Get recent role changes (users modified recently)
+    const recentUpdates = await User.find({ 
+      updatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      createdAt: { $lt: new Date(Date.now() - 60 * 1000) } // Exclude just registered users
+    })
+      .sort({ updatedAt: -1 })
+      .limit(activityLimit)
+      .select('firstName lastName email role updatedAt')
+
     const activity = [
+      // User registrations
       ...recentUsers.map(user => ({
+        id: `reg_${user._id}`,
         type: 'user_registration',
         message: `New user registered: ${user.firstName} ${user.lastName}`,
         timestamp: user.createdAt,
-        data: { userId: user._id, email: user.email }
+        data: { userId: user._id, email: user.email },
+        severity: 'info'
       })),
+      
+      // Discussion creations
       ...recentDiscussions.map(discussion => ({
+        id: `disc_${discussion._id}`,
         type: 'discussion_created',
-        message: `New discussion: ${discussion.title}`,
+        message: `New discussion: "${discussion.title}"`,
         timestamp: discussion.createdAt,
         data: { 
           discussionId: discussion._id, 
           author: discussion.author ? `${discussion.author.firstName} ${discussion.author.lastName}` : 'Unknown'
-        }
-      }))
+        },
+        severity: 'info'
+      })),
+      
+      // User logins
+      ...recentLogins.map(user => ({
+        id: `login_${user._id}_${user.lastLogin}`,
+        type: 'user_login',
+        message: `User login: ${user.firstName} ${user.lastName}`,
+        timestamp: user.lastLogin,
+        data: { userId: user._id, email: user.email },
+        severity: 'success'
+      })),
+      
+      // User updates (role changes, etc.)
+      ...recentUpdates.map(user => ({
+        id: `update_${user._id}_${user.updatedAt}`,
+        type: 'admin_action',
+        message: `User profile updated: ${user.firstName} ${user.lastName} (${user.role || 'user'})`,
+        timestamp: user.updatedAt,
+        data: { userId: user._id, email: user.email, role: user.role },
+        severity: 'warning'
+      })),
+      
+      // System events (server start time as a system event)
+      {
+        id: `system_${Date.now()}`,
+        type: 'system_event',
+        message: 'Admin dashboard accessed',
+        timestamp: new Date(),
+        data: { component: 'dashboard', admin: req.user.email },
+        severity: 'info'
+      }
     ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, limit)
 
     res.json(activity)
